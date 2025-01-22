@@ -21,6 +21,8 @@ class PostResource extends JsonResource
             'description' => $this->description,
             'posted_ago' => (int)Carbon::parse($this->created_at)->diffInMinutes(Carbon::now()),
             'user_name' => $this->user->name,
+            'likes' => $this->likes,
+            'comments' => $this->comments,
         ];
     }
 }
