@@ -6,12 +6,13 @@ use App\Http\Resources\PostCollection;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PostController extends Controller
 {
     public function index(): PostCollection
     {
-        $posts = Post::with(['user', 'comments'])->orderBy('id', 'desc')->get();
+        $posts = Post::with(['user', 'comments', 'files'])->orderBy('id', 'desc')->get();
 
         return new PostCollection($posts);
     }
@@ -24,28 +25,34 @@ class PostController extends Controller
             'title' => 'required',
             'description' => 'required',
             'files' => 'array|max:9',
-            'files.*' => 'file|max:2048'
+            'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048'
         ]);
 
         $data['user_id'] = $user->id;
 
-        $post = Post::create($data);
+        return DB::transaction(function () use ($data) {
+            $post = Post::create($data);
+            $fileUrls = [];
 
-        $fileUrls = [];
+            if (isset($data['files'])) {
 
-        if (isset($data['files'])) {
-            foreach ($data['files'] as $file) {
-                $filePath = $file->store('images');
+                    foreach ($data['files'] as $file) {
+                        $filePath = $file->storeAs('images', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
 
-                $fileRecord = $post->files()->create([
-                    'path' => asset('storage/' . $filePath)
-                ]);
+                        $fileRecord = $post->files()->create([
+                            'file_url' => asset('storage/' . $filePath)
+                        ]);
 
-                $fileUrls[] = $fileRecord->path;
+                        $fileUrls[] = $fileRecord->path;
+                    }
+
             }
-        }
 
-        return response()->json($post, $fileUrls);
+            return response()->json([
+                'post' => $post,
+                'file_urls' => $fileUrls
+            ]);
+        });
     }
 
     public function update(Post $post): JsonResponse
@@ -65,6 +72,6 @@ class PostController extends Controller
     {
         $post->delete();
 
-        return response()->json(['message' => 'Successfully deleted']);
+        return response()->json(['message' => 'Post successfully deleted']);
     }
 }
