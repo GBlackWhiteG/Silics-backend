@@ -15,14 +15,18 @@ class PostResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $currentUserId = auth()->id();
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
+            'code' => $this->code,
             'posted_ago' => (int)Carbon::parse($this->created_at)->diffInMinutes(Carbon::now()),
             'user_name' => $this->user->name,
             'files'=> $this->files,
             'likes' => $this->likes,
+            'liked_by_user' => $this->isLikedByUser($currentUserId),
             'comments' => $this->comments,
         ];
     }

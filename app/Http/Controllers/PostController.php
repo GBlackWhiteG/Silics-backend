@@ -22,8 +22,9 @@ class PostController extends Controller
         $user = auth()->user();
 
         $data = request()->validate([
-            'title' => 'required',
-            'description' => 'required',
+            'title' => '',
+            'description' => '',
+            'code' => '',
             'files' => 'array|max:9',
             'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048'
         ]);
