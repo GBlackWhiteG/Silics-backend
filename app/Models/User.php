@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Notifications\EmailCodeNotification;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -24,6 +25,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(
             User::class, 'subscriptions', 'subscriber_id', 'subscribed_to_id'
         );
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new EmailCodeNotification());
     }
 
     public function subscribers(): BelongsToMany

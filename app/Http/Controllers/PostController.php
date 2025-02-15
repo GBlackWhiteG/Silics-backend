@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\PostCollection;
+use App\Http\Resources\PostMessagesResource;
+use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,6 +27,7 @@ class PostController extends Controller
             'title' => '',
             'description' => '',
             'code' => '',
+            'prog_language' => '',
             'files' => 'array|max:9',
             'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048'
         ]);
@@ -54,6 +57,11 @@ class PostController extends Controller
                 'file_urls' => $fileUrls
             ]);
         });
+    }
+
+    public function show(Post $post): PostMessagesResource
+    {
+     return new PostMessagesResource($post);
     }
 
     public function update(Post $post): JsonResponse

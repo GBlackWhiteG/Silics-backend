@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Post extends Model
 {
-    protected $fillable = ['user_id', 'title', 'description', 'code'];
+    protected $fillable = ['user_id', 'title', 'description', 'code', 'likes', 'prog_language'];
 
     public function user(): BelongsTo
     {
@@ -18,7 +18,7 @@ class Post extends Model
 
     public function likes(): BelongsToMany
     {
-        return $this->belongsToMany(Post::class, 'like_posts');
+        return $this->belongsToMany(User::class, 'like_posts');
     }
 
     public function isLikedByUser($userId)
@@ -33,6 +33,6 @@ class Post extends Model
 
     public function comments(): HasMany
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class)->with('user')->orderBy('created_at', 'desc');
     }
 }
