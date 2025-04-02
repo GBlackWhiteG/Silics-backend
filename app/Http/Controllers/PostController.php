@@ -40,15 +40,15 @@ class PostController extends Controller
 
             if (isset($data['files'])) {
 
-                    foreach ($data['files'] as $file) {
-                        $filePath = $file->storeAs('images', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
+                foreach ($data['files'] as $file) {
+                    $filePath = $file->storeAs('images', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
 
-                        $fileRecord = $post->files()->create([
-                            'file_url' => asset('storage/' . $filePath)
-                        ]);
+                    $fileRecord = $post->files()->create([
+                        'file_url' => asset('storage/' . $filePath)
+                    ]);
 
-                        $fileUrls[] = $fileRecord->path;
-                    }
+                    $fileUrls[] = $fileRecord->path;
+                }
 
             }
 
@@ -61,7 +61,7 @@ class PostController extends Controller
 
     public function show(Post $post): PostMessagesResource
     {
-     return new PostMessagesResource($post);
+        return new PostMessagesResource($post);
     }
 
     public function update(Post $post): JsonResponse

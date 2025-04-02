@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\RunnerController;
 use App\Mail\VerificationMail;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Mail;
@@ -17,7 +18,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
         Route::post('/register', 'register')->name('register');
         Route::post('/login', 'login')->name('login');
         Route::post('/logout', 'logout')->middleware('auth:api')->name('logout');
-        Route::post('/refresh', 'refresh')->middleware('auth:api')->name('refresh');
+        Route::post('/refresh', 'refresh')->name('refresh');
         Route::post('/me', 'me')->middleware('auth:api')->name('me');
 
         Route::post('/send-confirmation-code', 'sendConfirmationCode');
@@ -38,6 +39,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 });
 
 Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])->middleware('signed', 'throttle:6,1')->name('verification.verify');
+
+Route::post('/php-run', [RunnerController::class, 'runPhp']);
+Route::post('/python-run', [RunnerController::class, 'runPython']);
 
 Route::post('/email/2fa', [VerifyEmailController::class, 'verify2FA'])->middleware('throttle:6,1')->name('verification.verify2fa');
 

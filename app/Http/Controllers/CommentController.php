@@ -13,7 +13,7 @@ class CommentController extends Controller
         $data = request()->validate([
             'post_id' => 'required|integer|exists:posts,id',
             'content' => 'required|string|max:10000',
-            'code' => 'required|string|max:10000',
+            'code' => 'nullable|string|max:10000',
         ]);
 
         $data['user_id'] = auth()->id();
