@@ -1,10 +1,8 @@
 <?php
 
+use App\Http\Controllers\CodeResultController;
 use App\Http\Controllers\CommentController;
-use App\Http\Controllers\RunnerController;
-use App\Mail\VerificationMail;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\ExecuteCodeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
@@ -39,11 +37,12 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 });
 
 Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])->middleware('signed', 'throttle:6,1')->name('verification.verify');
-
-Route::post('/php-run', [RunnerController::class, 'runPhp']);
-Route::post('/python-run', [RunnerController::class, 'runPython']);
-
 Route::post('/email/2fa', [VerifyEmailController::class, 'verify2FA'])->middleware('throttle:6,1')->name('verification.verify2fa');
+
+Route::post('/code/execute', [ExecuteCodeController::class, 'sendCodeToQueue']);
+
+Route::get('/code/execution-result/{id}', [CodeResultController::class, 'get']);
+Route::post('/code/execution-result', [CodeResultController::class, 'add']);
 
 Route::controller(PostController::class)->group(function () {
     Route::get('/posts', 'index')->name('posts.index');

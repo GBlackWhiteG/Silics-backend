@@ -45,6 +45,12 @@ return [
             'throw' => false,
         ],
 
+        'code-execution' => [
+            'driver' => 'local',
+            'root' => storage_path('code'),
+            'url' => env('APP_URL').'/',
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

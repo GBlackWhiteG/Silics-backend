@@ -6,9 +6,8 @@ RUN apt-get update && apt-get install -y \
       libpng-dev \
       libzip-dev \
       zip unzip \
-      git \
-      docker.io && \
-      docker-php-ext-install pdo_pgsql bcmath gd zip && \
+      git && \
+      docker-php-ext-install pdo_pgsql bcmath gd zip sockets && \
       apt-get clean && \
       rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

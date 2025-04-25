@@ -4,12 +4,12 @@ services:
     nginx:
         image: nginx:latest
         volumes:
-            -   ./:/var/www
-            -   ./_docker/nginx/conf.d:/etc/nginx/conf.d
+            - ./:/var/www
+            - ./_docker/nginx/conf.d:/etc/nginx/conf.d
         ports:
-            -   "8876:80"
+            - "8876:80"
         depends_on:
-            -   app
+            - app
         container_name: project_nginx
 
     app:
@@ -17,9 +17,9 @@ services:
             context: .
             dockerfile: _docker/app/Dockerfile
         volumes:
-            -   ./:/var/www
-            -   /var/run/docker.sock:/var/run/docker.sock
-            -   ./code-share:/var/www/code
+            - ./:/var/www
+            #            -   /var/run/docker.sock:/var/run/docker.sock
+            - ./code-share:/var/www/code
         container_name: project_app
 
     postgres:
@@ -30,29 +30,50 @@ services:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: parol372
         volumes:
-            -  pgdata:/var/lib/postgresql/data
+            - pgdata:/var/lib/postgresql/data
         ports:
-            -  "5433:5432"
+            - "5433:5432"
         container_name: project_postgres
 
-    php-runner:
-        image: php:8.2-fpm
-        volumes:
-            - ./code-share:/var/www/code
-        working_dir: /var/www
-        container_name: php_runner
+    rabbitmq:
+        image: rabbitmq:3-management
+        container_name: project_rabbitmq
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        environment:
+            RABBITMQ_DEFAULT_USER: guest
+            RABBITMQ_DEFAULT_PASS: guest
+        restart: always
 
-    python-runner:
+    redis:
+        image: redis:7.4.2
+        container_name: project_redis
+        ports:
+            - "6380:6379"
+        volumes:
+            - redisdata:/var/lib/redis/data
+
+    php-runner:
         build:
             context: .
-            dockerfile: _docker/python/Dockerfile
+            dockerfile: _docker/php/Dockerfile
         volumes:
-            -   ./code-share:/var/www/code
-        working_dir: /var/www
-        container_name: python_runner
-        ports:
-            -   "5001:5001"
+            - ./code-share/php:/var/www/code/php
+        container_name: php_runner
+
+#    python-runner:
+#        build:
+#            context: .
+#            dockerfile: _docker/python/Dockerfile
+#        volumes:
+#            -   ./code-share:/var/www/code
+#        working_dir: /var/www
+#        container_name: python_runner
+#        ports:
+#            -   "5001:5001"
 
 volumes:
     pgdata:
+    redisdata:
     code-share:
