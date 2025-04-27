@@ -62,16 +62,14 @@ services:
             - ./code-share/php:/var/www/code/php
         container_name: php_runner
 
-#    python-runner:
-#        build:
-#            context: .
-#            dockerfile: _docker/python/Dockerfile
-#        volumes:
-#            -   ./code-share:/var/www/code
-#        working_dir: /var/www
-#        container_name: python_runner
-#        ports:
-#            -   "5001:5001"
+    python-runner:
+        build:
+            context: .
+            dockerfile: _docker/python/Dockerfile
+        volumes:
+            -   ./code-share:/var/www/code
+        working_dir: /var/www
+        container_name: python_runner
 
 volumes:
     pgdata:

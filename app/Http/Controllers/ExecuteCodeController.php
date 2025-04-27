@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Storage;
+use App\Data\ProgLangData;
 use Illuminate\Support\Facades\Validator;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -25,10 +25,12 @@ class ExecuteCodeController extends Controller
         $connection = new AMQPStreamConnection('rabbitmq', 5672, 'guest', 'guest');
         $channel = $connection->channel();
 
+        $lang = ProgLangData::Data[$data['language']];
+
         $channel->queue_declare($data['language'], false, true, false, false);
 
         $fileUniqId = uniqid();
-        $filePath = '/var/www/code-share/php/code/' . $fileUniqId . '.php';
+        $filePath = "/var/www/code-share/{$lang['folder']}/code/" . $fileUniqId . '.' . $lang['extension'];
         file_put_contents($filePath, $data['code']);
 
         $msg = new AMQPMessage($fileUniqId);
