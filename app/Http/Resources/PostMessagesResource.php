@@ -22,6 +22,7 @@ class PostMessagesResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'code' => $this->code,
+            'prog_language' => $this->prog_language,
             'posted_ago' => (int)Carbon::parse($this->created_at)->diffInMinutes(Carbon::now()),
             'user_name' => $this->user->name,
             'files'=> $this->files,

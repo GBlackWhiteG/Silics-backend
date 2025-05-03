@@ -6,5 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class File extends Model
 {
-    protected $fillable = ['post_id', 'file_url'];
+    protected $fillable = ['fileable_id', 'fileable_type', 'file_url'];
+
+    public function fileable()
+    {
+        return $this->morphTo();
+    }
 }

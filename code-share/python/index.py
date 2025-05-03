@@ -10,7 +10,6 @@ connection = None
 channel = None
 
 def runCode(filePath: str):
-    print('runcode', flush=True)
     start = time.time()
     result = subprocess.run(['python', filePath], capture_output=True, text=True)
     exTime = time.time() - start
@@ -22,15 +21,12 @@ def runCode(filePath: str):
     return {'output': output, 'time': exTime}
 
 def sendResult(id: str, result, time: float):
-    print('sendresult', flush=True)
     url = 'http://nginx/api/code/execution-result'
     data = {'id': id, 'result': result, 'execution_time': time}
     params = json.dumps(data)
     response = requests.post(url, json=data)
-    print(response.json, flush=True)
 
 def callback(ch, method, properties, body):
-    print('callback', flush=True)
     fileId = body.decode()
     filePath = f"/var/www/code/python/code/{fileId}.py"
     result = runCode(filePath)
@@ -45,8 +41,6 @@ def graceful_shutdown(signum, frame):
 
 def main():
     global connection, channel
-
-    print('main', flush=True)
 
     credentials = pika.PlainCredentials('guest', 'guest')
     parameters = pika.ConnectionParameters('rabbitmq', 5672, '/', credentials)

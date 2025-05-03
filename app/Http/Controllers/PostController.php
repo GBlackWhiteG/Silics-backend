@@ -9,12 +9,17 @@ use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Util\PHP\Job;
 
 class PostController extends Controller
 {
     public function index(): PostCollection
     {
-        $posts = Post::with(['user', 'comments', 'files'])->orderBy('id', 'desc')->get();
+        $order_by = request()->query('order_by');
+
+        if (!in_array($order_by, ['created_at', 'likes'])) $order_by = 'created_at';
+
+        $posts = Post::with(['user', 'comments', 'files'])->orderBy($order_by, 'desc')->orderBy('created_at', 'desc')->get();
 
         return new PostCollection($posts);
     }
@@ -82,5 +87,18 @@ class PostController extends Controller
         $post->delete();
 
         return response()->json(['message' => 'Post successfully deleted']);
+    }
+
+    public function search(): PostCollection | JsonResponse
+    {
+        $search = request()->query('query');
+
+        if (!$search) {
+            return response()->json(['message' => 'Empty query param'], 400);
+        }
+
+        $posts = Post::where('title', 'like', '%' . $search . '%')->with(['user', 'comments', 'files'])->orderBy('id', 'desc')->get();
+
+        return new PostCollection($posts);
     }
 }

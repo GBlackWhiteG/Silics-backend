@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,6 +20,9 @@ class CommentResource extends JsonResource
             'post_id' => $this->post_id,
             'content' => $this->content,
             'code' => $this->code,
+            'prog_language' => $this->prog_language,
+            'files' => $this->files,
+            'posted_ago' => (int)Carbon::parse($this->created_at)->diffInMinutes(Carbon::now()),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'user' => new UserResource($this->user),
