@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\PostCollection;
 use App\Http\Resources\PostMessagesResource;
+use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -61,9 +62,9 @@ class PostController extends Controller
         });
     }
 
-    public function show(Post $post): PostMessagesResource
+    public function show(Post $post): PostResource
     {
-        return new PostMessagesResource($post);
+        return new PostResource($post);
     }
 
     public function update(Post $post): JsonResponse

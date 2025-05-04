@@ -2,13 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CommentCollection;
 use App\Models\Comment;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class CommentController extends Controller
 {
+    public function index(int $id): CommentCollection
+    {
+        $comments = Comment::where('post_id', $id)->paginate(5);
+
+        return new CommentCollection($comments);
+    }
+
     public function store(): JsonResponse
     {
         $data = request()->validate([
