@@ -4,12 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\PostCollection;
 use App\Http\Resources\PostMessagesResource;
-use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use PHPUnit\Util\PHP\Job;
 
 class PostController extends Controller
 {
@@ -19,7 +16,7 @@ class PostController extends Controller
 
         if (!in_array($order_by, ['created_at', 'likes'])) $order_by = 'created_at';
 
-        $posts = Post::with(['user', 'comments', 'files'])->orderBy($order_by, 'desc')->orderBy('created_at', 'desc')->get();
+        $posts = Post::with(['user', 'comments', 'files'])->orderBy($order_by, 'desc')->orderBy('created_at', 'desc')->paginate(2);
 
         return new PostCollection($posts);
     }

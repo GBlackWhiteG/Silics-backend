@@ -9,9 +9,23 @@ import json
 connection = None
 channel = None
 
+def isCodeSafe(filePath: str):
+    banned = [
+            'import os', 'import subprocess', 'import sys', 'open(', '__import__',
+            'eval(', 'exec(', 'from os', 'from subprocess', 'import shutil',
+            'socket', 'requests', 'import threading'
+        ]
+    with open(filePath, 'r') as file:
+        code = file.read()
+    return not any(b in code for b in banned)
+
 def runCode(filePath: str):
     start = time.time()
-    result = subprocess.run(['python', filePath], capture_output=True, text=True)
+    if (isCodeSafe(filePath)):
+        result = subprocess.run(['python', filePath], capture_output=True, text=True, timeout=30)
+    else:
+        result = "Ошибка: запрещенная команда"
+        return {'output': result, 'time': 0}
     exTime = time.time() - start
 
     if result.returncode != 0:
