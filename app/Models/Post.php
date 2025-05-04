@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Post extends Model
 {
@@ -26,9 +27,9 @@ class Post extends Model
         return $this->likes()->where('like_posts.user_id', $userId)->exists();
     }
 
-    public function files(): HasMany
+    public function files(): MorphMany
     {
-        return $this->hasMany(File::class);
+        return $this->morphMany(File::class, 'fileable');
     }
 
     public function comments(): HasMany

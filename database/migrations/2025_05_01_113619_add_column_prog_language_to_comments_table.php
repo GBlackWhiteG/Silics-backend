@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('files', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('post_id')->constrained('posts')->onDelete('cascade')->nu;
-            $table->string('file_url');
-            $table->timestamps();
+        Schema::table('comments', function (Blueprint $table) {
+            $table->enum('prog_language', ['php', 'python', 'javascript'])->nullable();
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('files');
+        Schema::table('comments', function (Blueprint $table) {
+            $table->dropColumn('prog_language');
+        });
     }
 };

@@ -16,5 +16,6 @@ COPY code-share/php/composer.json ./
 RUN composer install
 
 COPY code-share/php/ ./
+COPY code-share/php/php.ini /usr/local/etc/php/php.ini
 
 CMD ["php", "/var/www/code/php/index.php"]

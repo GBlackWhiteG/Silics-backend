@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Comment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CommentController extends Controller
 {
@@ -14,12 +15,46 @@ class CommentController extends Controller
             'post_id' => 'required|integer|exists:posts,id',
             'content' => 'required|string|max:10000',
             'code' => 'nullable|string|max:10000',
+            'prog_language' => '',
+            'files' => 'array|max:9',
+            'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048'
         ]);
 
         $data['user_id'] = auth()->id();
 
-        $comment = Comment::create($data);
+        return DB::transaction(function () use ($data) {
+            $comment = Comment::create($data);
+            $fileUrls = [];
 
-        return response()->json($comment);
+            if (isset($data['files'])) {
+
+                foreach ($data['files'] as $file) {
+                    $filePath = $file->storeAs('images', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
+
+                    $fileRecord = $comment->files()->create([
+                        'file_url' => asset('storage/' . $filePath),
+                    ]);
+
+                    $fileUrls[] = $fileRecord->path;
+                }
+
+            }
+
+            return response()->json([
+                'comment' => $comment,
+                'files_urls' => $fileUrls
+            ]);
+        });
+    }
+
+    public function destroy(Comment $comment): JsonResponse
+    {
+        if ($comment->user_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $comment->delete();
+
+        return response()->json(['message' => 'Comment successfully deleted']);
     }
 }

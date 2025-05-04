@@ -33,6 +33,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 
     Route::controller(CommentController::class)->group(function () {
         Route::post('/comments', 'store')->name('comments.store');
+//        Route::delete('/comments/{comment}', 'destroy')->name('comments.destroy');
     });
 });
 
@@ -52,6 +53,10 @@ Route::controller(PostController::class)->group(function () {
     Route::delete('/posts/{post}', 'destroy')->name('posts.destroy');
 });
 
+Route::get('/search', [PostController::class, 'search'])->name('search');
+
 Route::controller(UserController::class)->group(function () {
     Route::get('/users', 'index')->name('users.index');
 });
+
+Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
