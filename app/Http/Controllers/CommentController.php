@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CommentCollection;
+use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -11,12 +12,12 @@ class CommentController extends Controller
 {
     public function index(int $id): CommentCollection
     {
-        $comments = Comment::where('post_id', $id)->paginate(5);
+        $comments = Comment::where('post_id', $id)->orderBy('created_at', 'desc')->paginate(5);
 
         return new CommentCollection($comments);
     }
 
-    public function store(): JsonResponse
+    public function store(): CommentResource
     {
         $data = request()->validate([
             'post_id' => 'required|integer|exists:posts,id',
@@ -47,10 +48,7 @@ class CommentController extends Controller
 
             }
 
-            return response()->json([
-                'comment' => $comment,
-                'files_urls' => $fileUrls
-            ]);
+            return new CommentResource($comment);
         });
     }
 

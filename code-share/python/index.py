@@ -1,6 +1,7 @@
 import pika
 import signal
 import sys
+import os
 import subprocess
 import time
 import requests
@@ -44,6 +45,7 @@ def callback(ch, method, properties, body):
     fileId = body.decode()
     filePath = f"/var/www/code/python/code/{fileId}.py"
     result = runCode(filePath)
+    os.unlink(filePath)
     sendResult(fileId, result['output'], result['time'])
 
 def graceful_shutdown(signum, frame):

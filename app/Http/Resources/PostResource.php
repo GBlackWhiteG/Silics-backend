@@ -24,6 +24,7 @@ class PostResource extends JsonResource
             'code' => $this->code,
             'prog_language' => $this->prog_language,
             'posted_ago' => (int)Carbon::parse($this->created_at)->diffInMinutes(Carbon::now()),
+            'user_id' => $this->user->id,
             'user_name' => $this->user->name,
             'files'=> $this->files,
             'likes' => $this->likes,

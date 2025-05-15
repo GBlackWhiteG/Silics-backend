@@ -27,6 +27,10 @@ class ExecuteCodeController extends Controller
 
         $lang = ProgLangData::Data[$data['language']];
 
+        if (!$lang) {
+            return response()->json(['message' => 'Неверный язык программирования']);
+        }
+
         $channel->queue_declare($data['language'], false, true, false, false);
 
         $fileUniqId = uniqid();

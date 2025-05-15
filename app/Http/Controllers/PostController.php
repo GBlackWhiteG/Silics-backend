@@ -17,12 +17,12 @@ class PostController extends Controller
 
         if (!in_array($order_by, ['created_at', 'likes'])) $order_by = 'created_at';
 
-        $posts = Post::with(['user', 'comments', 'files'])->orderBy($order_by, 'desc')->orderBy('created_at', 'desc')->paginate(2);
+        $posts = Post::with(['user', 'comments', 'files'])->orderBy($order_by, 'desc')->orderBy('created_at', 'desc')->paginate(5);
 
         return new PostCollection($posts);
     }
 
-    public function store(): JsonResponse
+    public function store(): PostResource
     {
         $user = auth()->user();
 
@@ -55,10 +55,7 @@ class PostController extends Controller
 
             }
 
-            return response()->json([
-                'post' => $post,
-                'file_urls' => $fileUrls
-            ]);
+            return new PostResource($post);
         });
     }
 
@@ -82,6 +79,10 @@ class PostController extends Controller
 
     public function destroy(Post $post): JsonResponse
     {
+        if ($post->user_id !== auth()->id() ) {
+            return response()->json(['error' => 'Unauthorized'], 402);
+        }
+
         $post->delete();
 
         return response()->json(['message' => 'Post successfully deleted']);
