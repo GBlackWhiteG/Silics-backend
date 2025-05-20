@@ -19,4 +19,9 @@ class Comment extends Model
     {
         return $this->morphMany(File::class, 'fileable');
     }
+
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachmentable');
+    }
 }

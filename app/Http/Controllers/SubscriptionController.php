@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class SubscriptionController extends Controller
 {
-    public function subscribe($userId): JsonResponse
+    public function subscribe(int $userId): JsonResponse
     {
         $user = auth()->user();
 
@@ -23,7 +23,7 @@ class SubscriptionController extends Controller
         return response()->json(['message' => 'Успешно подписан']);
     }
 
-    public function unsubscribe($userId): JsonResponse
+    public function unsubscribe(int $userId): JsonResponse
     {
         $user = auth()->user();
 

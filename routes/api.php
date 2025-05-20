@@ -60,11 +60,15 @@ Route::group(['middleware' => 'api'], function () {
         Route::get('/posts/{post}', 'show')->name('posts.show');
         Route::patch('/posts/{post}', 'update')->name('posts.update');
         Route::delete('/posts/{post}', 'destroy')->name('posts.destroy');
+
+        Route::get('/posts/user/{id}', 'userPosts')->name('posts.userPosts');
     });
 
     Route::get('/search', [PostController::class, 'search'])->name('search');
 
     Route::controller(UserController::class)->group(function () {
         Route::get('/users', 'index')->name('users.index');
+        Route::get('/users/{user}', 'getProfile')->name('users.getProfile');
+        Route::post('/users/{user}', 'update')->name('users.update');
     });
 });

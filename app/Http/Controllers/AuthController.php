@@ -59,7 +59,7 @@ class AuthController extends Controller
         $code = random_int(100000, 999999);
         Cache::put('2fa_code_' . auth()->user()->id, $code, now()->addMinutes(10));
 
-        Mail::to('ahms65040@gmail.com')->send(new VerificationMail($code));
+        Mail::to($credentials['email'])->send(new VerificationMail($code));
 
         return response()->json(['message' => '2FA code sent']);
     }

@@ -8,6 +8,7 @@ use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class PostController extends Controller
 {
@@ -17,29 +18,43 @@ class PostController extends Controller
 
         if (!in_array($order_by, ['created_at', 'likes'])) $order_by = 'created_at';
 
-        $posts = Post::with(['user', 'comments', 'files'])->orderBy($order_by, 'desc')->orderBy('created_at', 'desc')->paginate(5);
+        $posts = Post::with(['user', 'comments', 'files'])->orderBy($order_by, 'desc')->orderBy('created_at', 'desc')->paginate(10);
 
         return new PostCollection($posts);
     }
 
-    public function store(): PostResource
+    public function userPosts(int $user_id): PostCollection
+    {
+        $posts = Post::where('user_id', $user_id)->with('user', 'comments', 'files')->orderBy('created_at', 'desc')->paginate(10);
+
+        return new PostCollection($posts);
+    }
+
+    public function store(): PostResource | JsonResponse
     {
         $user = auth()->user();
 
-        $data = request()->validate([
+        $validator = Validator::make(request()->all(), ([
             'title' => '',
             'description' => '',
             'code' => '',
             'prog_language' => '',
             'files' => 'array|max:9',
-            'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048'
-        ]);
+            'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048',
+            'attachments' => 'array|max:9',
+            'attachments.*' => 'file|mimes:txt,md,log,php,js,ts,html,css,scss,java,py,cpp,c,h,cs,go,rb,rs,sh,json,xml,yml,yaml,sql,ini,bat,cmd,ps1,kt,swift,doc,docx,xls,xlsx,ppt,pptx,pdf,rtf|max:5120',
+        ]));
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $data = $validator->validated();
 
         $data['user_id'] = $user->id;
 
         return DB::transaction(function () use ($data) {
             $post = Post::create($data);
-            $fileUrls = [];
 
             if (isset($data['files'])) {
 
@@ -49,8 +64,20 @@ class PostController extends Controller
                     $fileRecord = $post->files()->create([
                         'file_url' => asset('storage/' . $filePath)
                     ]);
+                }
 
-                    $fileUrls[] = $fileRecord->path;
+            }
+
+            if (isset($data['attachments'])) {
+
+                foreach ($data['attachments'] as $attachment) {
+                    $attachmentPath = $attachment->storeAs('attachments', uniqid() . '.' . $attachment->getClientOriginalExtension(), 'public');
+
+                    $attachmentRecord = $post->attachments()->create([
+                        'original_filename' => $attachment->getClientOriginalName(),
+                        'attachment_url' => asset('storage/' . $attachmentPath),
+                        'mime_type' => $attachment->getClientMimeType(),
+                    ]);
                 }
 
             }

@@ -22,6 +22,7 @@ class CommentResource extends JsonResource
             'code' => $this->code,
             'prog_language' => $this->prog_language,
             'files' => $this->files,
+            'attachments' => $this->attachments,
             'posted_ago' => (int)Carbon::parse($this->created_at)->diffInMinutes(Carbon::now()),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

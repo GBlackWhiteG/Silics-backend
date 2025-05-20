@@ -32,6 +32,11 @@ class Post extends Model
         return $this->morphMany(File::class, 'fileable');
     }
 
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachmentable');
+    }
+
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class)->with('user')->orderBy('created_at', 'desc');

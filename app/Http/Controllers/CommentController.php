@@ -7,43 +7,61 @@ use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
 {
     public function index(int $id): CommentCollection
     {
-        $comments = Comment::where('post_id', $id)->orderBy('created_at', 'desc')->paginate(5);
+        $comments = Comment::where('post_id', $id)->orderBy('created_at', 'desc')->paginate(10);
 
         return new CommentCollection($comments);
     }
 
-    public function store(): CommentResource
+    public function store(): CommentResource | JsonResponse
     {
-        $data = request()->validate([
+        $validator = Validator::make(request()->all(), ([
             'post_id' => 'required|integer|exists:posts,id',
             'content' => 'required|string|max:10000',
             'code' => 'nullable|string|max:10000',
             'prog_language' => '',
             'files' => 'array|max:9',
-            'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048'
-        ]);
+            'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048',
+            'attachments' => 'array|max:9',
+            'attachments.*' => 'file|mimes:txt,md,log,php,js,ts,html,css,scss,java,py,cpp,c,h,cs,go,rb,rs,sh,json,xml,yml,yaml,sql,ini,bat,cmd,ps1,kt,swift,doc,docx,xls,xlsx,ppt,pptx,pdf,rtf|max:5120',
+        ]));
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        }
+
+        $data = $validator->validated();
 
         $data['user_id'] = auth()->id();
 
         return DB::transaction(function () use ($data) {
             $comment = Comment::create($data);
-            $fileUrls = [];
 
             if (isset($data['files'])) {
-
                 foreach ($data['files'] as $file) {
                     $filePath = $file->storeAs('images', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
 
                     $fileRecord = $comment->files()->create([
                         'file_url' => asset('storage/' . $filePath),
                     ]);
+                }
 
-                    $fileUrls[] = $fileRecord->path;
+            }
+
+            if (isset($data['attachments'])) {
+                foreach ($data['attachments'] as $attachment) {
+                    $attachmentPath = $attachment->storeAs('attachments', uniqid() . '.' . $attachment->getClientOriginalExtension(), 'public');
+
+                    $attachmentRecord = $comment->attachments()->create([
+                        'original_filename' => $attachment->getClientOriginalName(),
+                        'attachment_url' => asset('storage/' . $attachmentPath),
+                        'mime_type' => $attachment->getClientMimeType(),
+                    ]);
                 }
 
             }
