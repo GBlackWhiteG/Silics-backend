@@ -29,7 +29,7 @@ class UserController extends Controller
     public function update(User $user): UserResource | JsonResponse
     {
         if ($user->id !== auth()->id()) {
-            return response()->json(['error' => 'Unauthorized.'], 401);
+            return response()->json(['error' => 'Forbidden.'], 403);
         }
 
         $validator = Validator::make(request()->all(), [

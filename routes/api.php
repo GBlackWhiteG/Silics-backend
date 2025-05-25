@@ -58,7 +58,7 @@ Route::group(['middleware' => 'api'], function () {
         Route::get('/posts', 'index')->name('posts.index');
         Route::post('/posts', 'store')->name('posts.store');
         Route::get('/posts/{post}', 'show')->name('posts.show');
-        Route::patch('/posts/{post}', 'update')->name('posts.update');
+        Route::post('/posts/{post}', 'update')->name('posts.update');
         Route::delete('/posts/{post}', 'destroy')->name('posts.destroy');
 
         Route::get('/posts/user/{id}', 'userPosts')->name('posts.userPosts');

@@ -91,17 +91,62 @@ class PostController extends Controller
         return new PostResource($post);
     }
 
-    public function update(Post $post): JsonResponse
+    public function update(Post $post): JsonResponse | PostResource
     {
-        $data = request()->validate([
-            'user_id' => 'required|exists:users,id',
-            'title' => 'required',
-            'description' => 'required'
-        ]);
+        $userId = auth()->id();
 
-        $post->update($data);
+        if ($userId !== $post->user_id) {
+            return response()->json(['error' => 'Forbidden.'], 403);
+        }
 
-        return response()->json($data);
+        $validator = Validator::make(request()->all(), ([
+            'title' => '',
+            'description' => '',
+            'code' => '',
+            'prog_language' => '',
+            'files' => 'array|max:9',
+            'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048',
+            'attachments' => 'array|max:9',
+            'attachments.*' => 'file|mimes:txt,md,log,php,js,ts,html,css,scss,java,py,cpp,c,h,cs,go,rb,rs,sh,json,xml,yml,yaml,sql,ini,bat,cmd,ps1,kt,swift,doc,docx,xls,xlsx,ppt,pptx,pdf,rtf|max:5120',
+        ]));
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $data = $validator->validated();
+
+        return DB::transaction(function () use ($data, $post) {
+            if (isset($data['files'])) {
+
+                foreach ($data['files'] as $file) {
+                    $filePath = $file->storeAs('images', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
+
+                    $fileRecord = $post->files()->create([
+                        'file_url' => asset('storage/' . $filePath)
+                    ]);
+                }
+
+            }
+
+            if (isset($data['attachments'])) {
+
+                foreach ($data['attachments'] as $attachment) {
+                    $attachmentPath = $attachment->storeAs('attachments', uniqid() . '.' . $attachment->getClientOriginalExtension(), 'public');
+
+                    $attachmentRecord = $post->attachments()->create([
+                        'original_filename' => $attachment->getClientOriginalName(),
+                        'attachment_url' => asset('storage/' . $attachmentPath),
+                        'mime_type' => $attachment->getClientMimeType(),
+                    ]);
+                }
+
+            }
+
+            $post->update($data);
+
+            return new PostResource($post);
+        });
     }
 
     public function destroy(Post $post): JsonResponse
