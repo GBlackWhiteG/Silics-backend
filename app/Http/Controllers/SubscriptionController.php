@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserFullCollection;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class SubscriptionController extends Controller
@@ -40,17 +41,21 @@ class SubscriptionController extends Controller
         return response()->json(['message' => 'Успешно отписан']);
     }
 
-    public function getSubscriptions(): JsonResponse
+    public function getSubscriptions(): UserFullCollection
     {
         $user = auth()->user();
 
-        return response()->json($user->subscriptions);
+        $data = $user->subscriptions()->paginate(10);
+
+        return new UserFullCollection($data);
     }
 
-    public function getSubscribers(): JsonResponse
+    public function getSubscribers(): UserFullCollection
     {
         $user = auth()->user();
 
-        return response()->json($user->subscribers);
+        $data = $user->subscribers()->paginate(10);
+
+        return new UserFullCollection($data);
     }
 }

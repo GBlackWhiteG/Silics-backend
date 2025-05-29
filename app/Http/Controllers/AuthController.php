@@ -50,8 +50,13 @@ class AuthController extends Controller
     {
         $credentials = request(['email', 'password']);
 
-        if (!$user = auth('api')->attempt($credentials)) {
+        if (!auth('api')->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $user = User::where('email', $credentials['email'])->firstOrFail();
+        if ($user->blocked) {
+            return response()->json(['error' => 'Пользователь заблокирован'], 401);
         }
 
         Cache::put('2fa_user_id', auth()->user()->id);

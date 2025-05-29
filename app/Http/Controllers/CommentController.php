@@ -72,7 +72,7 @@ class CommentController extends Controller
 
     public function destroy(Comment $comment): JsonResponse
     {
-        if ($comment->user_id !== auth()->id()) {
+        if ($comment->user_id !== auth()->id() && auth()->user()->role !== 'admin') {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 

@@ -8,6 +8,7 @@ use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class PostController extends Controller
@@ -42,7 +43,7 @@ class PostController extends Controller
             'files' => 'array|max:9',
             'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048',
             'attachments' => 'array|max:9',
-            'attachments.*' => 'file|mimes:txt,md,log,php,js,ts,html,css,scss,java,py,cpp,c,h,cs,go,rb,rs,sh,json,xml,yml,yaml,sql,ini,bat,cmd,ps1,kt,swift,doc,docx,xls,xlsx,ppt,pptx,pdf,rtf|max:5120',
+            'attachments.*' => 'file|max:5120',
         ]));
 
         if ($validator->fails()) {
@@ -108,6 +109,10 @@ class PostController extends Controller
             'files.*' => 'mimes:jpg,jpeg,png,gif,webp|max:2048',
             'attachments' => 'array|max:9',
             'attachments.*' => 'file|mimes:txt,md,log,php,js,ts,html,css,scss,java,py,cpp,c,h,cs,go,rb,rs,sh,json,xml,yml,yaml,sql,ini,bat,cmd,ps1,kt,swift,doc,docx,xls,xlsx,ppt,pptx,pdf,rtf|max:5120',
+            'delete_files' => 'array|max:9',
+            'delete_files.*' => 'numeric|exists:files,id',
+            'delete_attachments' => 'array|max:9',
+            'delete_attachments.*' => 'numeric|exists:attachments,id'
         ]));
 
         if ($validator->fails()) {
@@ -116,9 +121,12 @@ class PostController extends Controller
 
         $data = $validator->validated();
 
+        if (isset($data['files']) && $post->files()->count() + count($data['files']) >= 9 || isset($data['attachments']) && $post->attachments()->count() + count($data['attachments']) >= 9) {
+            return response()->json(['error' => 'Слишком много изображений/вложений'], 400);
+        }
+
         return DB::transaction(function () use ($data, $post) {
             if (isset($data['files'])) {
-
                 foreach ($data['files'] as $file) {
                     $filePath = $file->storeAs('images', uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
 
@@ -126,11 +134,19 @@ class PostController extends Controller
                         'file_url' => asset('storage/' . $filePath)
                     ]);
                 }
+            }
 
+            if (isset($data['delete_files'])) {
+                foreach ($data['delete_files'] as $fileId) {
+                    $file = $post->files()->find($fileId);
+
+                    Storage::delete($file->file_url);
+
+                    $file->delete();
+                }
             }
 
             if (isset($data['attachments'])) {
-
                 foreach ($data['attachments'] as $attachment) {
                     $attachmentPath = $attachment->storeAs('attachments', uniqid() . '.' . $attachment->getClientOriginalExtension(), 'public');
 
@@ -140,7 +156,16 @@ class PostController extends Controller
                         'mime_type' => $attachment->getClientMimeType(),
                     ]);
                 }
+            }
 
+            if (isset($data['delete_attachments'])) {
+                foreach ($data['delete_attachments'] as $attachmentId) {
+                    $attachment = $post->attachments()->find($attachmentId);
+
+                    Storage::delete($attachment->attachment_url);
+
+                    $attachment->delete();
+                }
             }
 
             $post->update($data);
@@ -151,7 +176,7 @@ class PostController extends Controller
 
     public function destroy(Post $post): JsonResponse
     {
-        if ($post->user_id !== auth()->id() ) {
+        if ($post->user_id !== auth()->id() && auth()->user()->role !== 'admin') {
             return response()->json(['error' => 'Unauthorized'], 402);
         }
 

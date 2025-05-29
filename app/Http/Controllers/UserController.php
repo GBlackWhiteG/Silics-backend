@@ -29,7 +29,7 @@ class UserController extends Controller
     public function update(User $user): UserResource | JsonResponse
     {
         if ($user->id !== auth()->id()) {
-            return response()->json(['error' => 'Forbidden.'], 403);
+            return response()->json(['error' => 'Forbidden'], 403);
         }
 
         $validator = Validator::make(request()->all(), [
@@ -54,5 +54,17 @@ class UserController extends Controller
         $user->update($data);
 
         return new UserResource($user);
+    }
+
+    public function userIsBlockedChange(User $user): JsonResponse
+    {
+        if ($user->id === auth()->id()) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
+        $user->blocked = !$user->blocked;
+        $user->save();
+
+        return response()->json(['message' => 'user blocked status changed'], 200);
     }
 }
