@@ -22,6 +22,20 @@ services:
             - ./code-share:/var/www/code
         container_name: project_app
 
+    reverb:
+        build:
+            context: .
+            dockerfile: _docker/app/Dockerfile
+        volumes:
+            -   ./:/var/www
+        container_name: project_reverb
+        hostname: '0.0.0.0'
+        ports:
+            -   "8080:8080"
+        command: ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
+        depends_on:
+            -   redis
+
     postgres:
         image: postgres:15
         restart: always

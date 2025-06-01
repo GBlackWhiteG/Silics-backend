@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\AddCommentEvent;
+use App\Events\RemoveCommentEvent;
 use App\Http\Resources\CommentCollection;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
+use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -18,7 +21,7 @@ class CommentController extends Controller
         return new CommentCollection($comments);
     }
 
-    public function store(): CommentResource | JsonResponse
+    public function store(): CommentResource|JsonResponse
     {
         $validator = Validator::make(request()->all(), ([
             'post_id' => 'required|integer|exists:posts,id',
@@ -66,6 +69,11 @@ class CommentController extends Controller
 
             }
 
+            $post = Post::find($data['post_id']);
+            if ($post->user->id !== auth()->id()) {
+                event(new AddCommentEvent($post->user->id, $data['post_id'], $comment->id, auth()->user()));
+            }
+
             return new CommentResource($comment);
         });
     }
@@ -76,6 +84,8 @@ class CommentController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
+        $user_id = Post::findOrFail($comment->post_id)->user_id;
+        event(new RemoveCommentEvent($user_id, auth()->id(), $comment->id));
         $comment->delete();
 
         return response()->json(['message' => 'Comment successfully deleted']);

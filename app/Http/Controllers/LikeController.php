@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\LikeEvent;
+use App\Events\UnlikeEvent;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,9 +22,15 @@ class LikeController extends Controller
         if ($post->likes()->where('like_posts.user_id', $userId)->exists()) {
             $post->likes()->detach($userId);
             $message = 'Unliked';
+            if ($post->user_id !== $userId) {
+                event(new UnlikeEvent($post->user->id, $post->id));
+            }
         } else {
             $post->likes()->attach($userId);
             $message = 'Liked';
+            if ($post->user_id !== $userId) {
+                event(new LikeEvent($post->user->id, $post->id, auth()->user()));
+            }
         }
 
         $likes_count = $post->likes()->count();

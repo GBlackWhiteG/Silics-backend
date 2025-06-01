@@ -3,6 +3,7 @@
 use App\Http\Controllers\CodeResultController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ExecuteCodeController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
@@ -60,6 +61,10 @@ Route::group(['middleware' => 'api'], function () {
             Route::post('/users/{user}', 'update')->name('users.update');
             Route::put('/users/{user}', 'userIsBlockedChange');
         });
+
+        Route::controller(NotificationController::class)->group(function () {
+            Route::get('/notifications/{id}', 'index')->name('notifications');
+        });
     });
 
     Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])->middleware('signed', 'throttle:6,1')->name('verification.verify');
@@ -76,5 +81,9 @@ Route::group(['middleware' => 'api'], function () {
     Route::controller(UserController::class)->group(function () {
         Route::get('/users', 'index')->name('users.index');
         Route::get('/users/{user}', 'getProfile')->name('users.getProfile');
+    });
+
+    Route::controller(NotificationController::class)->group(function () {
+        Route::get('/notifications', 'all')->name('notifications');
     });
 });

@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
       libzip-dev \
       zip unzip \
       git && \
-      docker-php-ext-install pdo_pgsql bcmath gd zip sockets && \
+      docker-php-ext-install pdo_pgsql bcmath gd zip pcntl sockets && \
       apt-get clean && \
       rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
