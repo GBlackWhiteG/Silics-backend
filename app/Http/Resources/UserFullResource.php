@@ -28,6 +28,7 @@ class UserFullResource extends JsonResource
             'subscribers_count' => count($this->subscribers),
             'is_subscribed' => $authUser ? $authUser->subscriptions->contains($this->resource->id) : false,
             'is_blocked' => $this->blocked,
+            'is_enabled_two_fa' => $this->is_enabled_two_fa,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

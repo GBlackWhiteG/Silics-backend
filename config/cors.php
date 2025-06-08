@@ -19,6 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
+//    'allowed_origins' => ['https://silics-frontend-a1n9.vercel.app/'],
     'allowed_origins' => ['http://localhost:3000'],
 
     'allowed_origins_patterns' => [],

@@ -44,7 +44,7 @@ class AddCommentEvent implements ShouldBroadcast
         $this->id = $notification->id;
         $this->userId = $userId;
         $this->likedUserId = $likedUser->id;
-        $this->likedUserAvatar = $likedUser->avatar_url;
+        $this->likedUserAvatar = $likedUser->avatar_url || null;
         $this->postId = $postId;
         $this->message = $message;
     }

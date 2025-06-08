@@ -35,7 +35,7 @@ class ExecuteCodeController extends Controller
 
         $fileUniqId = uniqid();
         $filePath = "/var/www/code-share/{$lang['folder']}/code/" . $fileUniqId . '.' . $lang['extension'];
-        file_put_contents($filePath, $data['code']);
+        $result = file_put_contents($filePath, $data['code']);
 
         $msg = new AMQPMessage($fileUniqId);
         $channel->basic_publish($msg, '', $data['language']);

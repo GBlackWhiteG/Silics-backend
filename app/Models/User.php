@@ -21,6 +21,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'biography',
         'avatar_url',
         'password',
+        'is_enabled_two_fa'
     ];
 
     public function subscriptions(): BelongsToMany

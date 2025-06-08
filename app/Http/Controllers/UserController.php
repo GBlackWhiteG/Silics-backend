@@ -21,6 +21,20 @@ class UserController extends Controller
         return new UserFullCollection($users);
     }
 
+    public function toggleTwoFA(User $user): JsonResponse
+    {
+        if (auth()->id() !== $user->id) {
+            return response()->json(['error' => 'Forbidden'], 403);
+        }
+
+        $twoFactor = !$user->is_enabled_two_fa;
+        $user->is_enabled_two_fa = $twoFactor;
+        $user->save();
+
+        $status = $twoFactor ? 'включена' : 'отключена';
+        return response()->json(['message' => "Двухфакторная аутентификация успешно {$status}"]);
+    }
+
     public function getProfile(User $user): UserFullResource
     {
         return new UserFullResource($user);

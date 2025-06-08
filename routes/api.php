@@ -49,7 +49,6 @@ Route::group(['middleware' => 'api'], function () {
         Route::post('/code/execute', [ExecuteCodeController::class, 'sendCodeToQueue']);
 
         Route::get('/code/execution-result/{id}', [CodeResultController::class, 'get']);
-        Route::post('/code/execution-result', [CodeResultController::class, 'add']);
 
         Route::controller(PostController::class)->group(function () {
             Route::post('/posts', 'store')->name('posts.store');
@@ -60,12 +59,16 @@ Route::group(['middleware' => 'api'], function () {
         Route::controller(UserController::class)->group(function () {
             Route::post('/users/{user}', 'update')->name('users.update');
             Route::put('/users/{user}', 'userIsBlockedChange');
+
+            Route::post('/users/{user}/toggle-twofa', 'toggleTwoFA');
         });
 
         Route::controller(NotificationController::class)->group(function () {
             Route::get('/notifications/{id}', 'index')->name('notifications');
         });
     });
+
+    Route::post('/code/execution-result', [CodeResultController::class, 'add']);
 
     Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])->middleware('signed', 'throttle:6,1')->name('verification.verify');
     Route::post('/email/2fa', [VerifyEmailController::class, 'verify2FA'])->middleware('throttle:6,1')->name('verification.verify2fa');

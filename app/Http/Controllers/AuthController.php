@@ -59,6 +59,11 @@ class AuthController extends Controller
             return response()->json(['error' => 'Пользователь заблокирован'], 401);
         }
 
+        if (!$user->is_enabled_two_fa) {
+            $token = auth()->login($user);
+            return response()->json(['token' => $token], 200);
+        }
+
         Cache::put('2fa_user_id', auth()->user()->id);
 
         $code = random_int(100000, 999999);
